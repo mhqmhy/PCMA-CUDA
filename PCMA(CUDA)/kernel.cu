@@ -3,119 +3,123 @@
 #include "device_launch_parameters.h"
 
 #include <stdio.h>
+#include <iostream>
+#include<time.h>
+
+#include<opencv2/opencv.hpp>
+#include <opencv2/core.hpp>
+#include <opencv2/highgui.hpp>
+
+
+#define TX 32 
+#define TY 32
 using namespace std;
-cudaError_t addWithCuda(int *c, const int *a, const int *b, unsigned int size);
+using namespace cv;
+double3 **I0;
+double3 **I45;
+double3 **I90;
+double3 **I135;
 
-__global__ void addKernel(int *c, const int *a, const int *b)
-{
-    int i = threadIdx.x;
-    c[i] = a[i] + b[i];
+__global__
+void computeS0Kernel(double3 **out, double3 ** I0, double3 ** I45, double3 ** I90, double3 ** I135,int w,int h) {
+	
+	const int col = blockIdx.x*blockDim.x + threadIdx.x;
+	const int row = blockIdx.y*blockDim.y + threadIdx.y;
+	const int i = row*w + col;
+	out[i]->x = (I0[row][col].x + I45[row][col].x +I90[row][col].x + I135[row][col].x)/2.0;
+	out[i]->y = (I0[row][col].y + I45[row][col].y + I90[row][col].y + I135[row][col].y) / 2.0;
+	out[i]->z = (I0[row][col].z + I45[row][col].z + I90[row][col].z + I135[row][col].z) / 2.0;
+
 }
-
+void PCMA(Mat image0,Mat image45,Mat image90,Mat image135,double w,double pt_x
+,double pt_y,double wSize_w,double wSize_h);
 int main()
-{
-    const int arraySize = 5;
-    const int a[arraySize] = { 1, 2, 3, 4, 5 };
-    const int b[arraySize] = { 10, 20, 30, 40, 50 };
-    int c[arraySize] = { 0 };
+{	
+	//…˘√˜±‰¡ø
+	clock_t startTime, endTime, tempS, tempE;
+	Mat image0, image45, image90, image135;
+	//∂¡»°Õº∆¨
+	tempS = clock();
+	image0 = imread("1024/right_up.bmp");
+	image0.convertTo(image0, CV_32FC3, 1.0 / 255.0);
+	image45 = imread("1024/left_up.bmp");
+	image45.convertTo(image45, CV_32FC3, 1.0 / 255.0);
+	image90 = imread("1024/left_down.bmp");
+	image90.convertTo(image90, CV_32FC3, 1.0 / 255.0);
+	image135 = imread("1024/right_down.bmp");
+	image135.convertTo(image135, CV_32FC3, 1.0 / 255.0);
+	tempE = clock();
+	cout << "∂¡»°Õº∆¨£∫" << double(tempE - tempS)/ CLOCKS_PER_SEC << "s" << endl;
+    
+	
+	I0 = (double3 **)calloc(441 *925, sizeof(double3));
+		I45 = (double3 **)calloc(441 * 925, sizeof(double3));
+	I90 = (double3 **)calloc(441 * 925, sizeof(double3));
+	I135 = (double3 **)calloc(441 * 925, sizeof(double3));
 
-    // Add vectors in parallel.
-    cudaError_t cudaStatus = addWithCuda(c, a, b, arraySize);
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "addWithCuda failed!");
-        return 1;
-    }
+	
+	//≤√ºÙÕº∆¨
+	int H = image0.rows, W = image0.cols, D = image0.channels();
+	double pt_x = 100, pt_y = 100;
+	Rect area(pt_x - 1, pt_y - 1, W - pt_x + 1, H - pt_y + 1);
+	image0 = image0(area);
+	image45 = image45(area);
+	image90 = image90(area);
+	image135 = image135(area);
+	
+	//cout << ptr[0] << " " << ptr[1] << endl;
 
-    printf("{1,2,3,4,5} + {10,20,30,40,50} = {%d,%d,%d,%d,%d}\n",
-        c[0], c[1], c[2], c[3], c[4]);
-
-    // cudaDeviceReset must be called before exiting in order for profiling and
-    // tracing tools such as Nsight and Visual Profiler to show complete traces.
-    cudaStatus = cudaDeviceReset();
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaDeviceReset failed!");
-        return 1;
-    }
+	pt_x = 1, pt_y = 1;
+	double wSize_w = 10, wSize_h = 10;
+	//÷¥––»•ŒÌÀ„∑®
+	PCMA(image0, image45, image90, image135, 1.7,pt_x, pt_y, wSize_w, wSize_h);
+	free(I0);
+free(I45);
+	free(I90);
+	free(I135);
 	system("pause");
     return 0;
 }
 
-// Helper function for using CUDA to add vectors in parallel.
-cudaError_t addWithCuda(int *c, const int *a, const int *b, unsigned int size)
+
+void Mat2Double3(Mat a, double3 **mat) {
+	int h = a.rows, w = a.cols;
+	for (int row = 0; row < h; row++) {
+		for (int col = 0; col < w; col++) {
+			double *ptr = a.ptr<double>(row, col);
+			mat[row][col].x = ptr[0];
+			mat[row][col].y = ptr[1];
+			mat[row][col].z = ptr[2];
+		}
+	}
+}
+
+void PCMA(Mat image0, Mat image45, Mat image90, Mat image135, double w, double pt_x, double pt_y, double wSize_w, double wSize_h)
 {
-    int *dev_a = 0;
-    int *dev_b = 0;
-    int *dev_c = 0;
-    cudaError_t cudaStatus;
+	int W = 441, H = 925;
+	clock_t  tempS, tempE;
+	cout << image0.rows <<" "<<image0.cols<< endl;
+	
 
-    // Choose which GPU to run on, change this on a multi-GPU system.
-    cudaStatus = cudaSetDevice(0);
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaSetDevice failed!  Do you have a CUDA-capable GPU installed?");
-        goto Error;
-    }
+	 Mat2Double3(image0.clone(),(double3 **)I0);
+	 Mat2Double3(image45.clone(), (double3 **)I45);
+	  Mat2Double3(image90.clone(), (double3 **)I90);
+	 Mat2Double3(image135.clone(), (double3 **)I135);
 
-    // Allocate GPU buffers for three vectors (two input, one output)    .
-    cudaStatus = cudaMalloc((void**)&dev_c, size * sizeof(int));
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaMalloc failed!");
-        goto Error;
-    }
-
-    cudaStatus = cudaMalloc((void**)&dev_a, size * sizeof(int));
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaMalloc failed!");
-        goto Error;
-    }
-
-    cudaStatus = cudaMalloc((void**)&dev_b, size * sizeof(int));
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaMalloc failed!");
-        goto Error;
-    }
-
-    // Copy input vectors from host memory to GPU buffers.
-    cudaStatus = cudaMemcpy(dev_a, a, size * sizeof(int), cudaMemcpyHostToDevice);
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaMemcpy failed!");
-        goto Error;
-    }
-
-    cudaStatus = cudaMemcpy(dev_b, b, size * sizeof(int), cudaMemcpyHostToDevice);
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaMemcpy failed!");
-        goto Error;
-    }
-
-    // Launch a kernel on the GPU with one thread for each element.
-    addKernel<<<1, size>>>(dev_c, dev_a, dev_b);
-
-    // Check for any errors launching the kernel
-    cudaStatus = cudaGetLastError();
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "addKernel launch failed: %s\n", cudaGetErrorString(cudaStatus));
-        goto Error;
-    }
-    
-    // cudaDeviceSynchronize waits for the kernel to finish, and returns
-    // any errors encountered during the launch.
-    cudaStatus = cudaDeviceSynchronize();
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaDeviceSynchronize returned error code %d after launching addKernel!\n", cudaStatus);
-        goto Error;
-    }
-
-    // Copy output vector from GPU buffer to host memory.
-    cudaStatus = cudaMemcpy(c, dev_c, size * sizeof(int), cudaMemcpyDeviceToHost);
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaMemcpy failed!");
-        goto Error;
-    }
-
-Error:
-    cudaFree(dev_c);
-    cudaFree(dev_a);
-    cudaFree(dev_b);
-    
-    return cudaStatus;
+	tempS = clock();
+	//º∆À„S0=(I0+I45+I90+I135)/2.0
+	//int W = image0.cols, H = image0.rows;
+	double3 **out = (double3 **)calloc(W*H, sizeof(double3));
+	double3 **d_out;
+	cudaMalloc(&d_out, W*H * sizeof(double3));
+	const dim3 blockSize(TX, TY);
+	const int bx = (W + TX - 1) / TX;
+	const int by = (H + TY - 1) / TY;
+	const dim3 gridSize = dim3(bx, by);
+	computeS0Kernel << <gridSize, blockSize>>> (d_out, I0, I45, I90, I135, W, H);
+	cudaMemcpy(out, d_out, W*H * sizeof(double3), cudaMemcpyDeviceToHost);
+	cudaFree(d_out);
+	free(out);
+	tempE = clock();
+	cout << "º∆À„S0:" << double(tempE - tempS) / CLOCKS_PER_SEC << "s" << endl;
 }

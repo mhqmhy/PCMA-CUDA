@@ -1,3 +1,29 @@
-﻿    正在创建库 E:\C++\PCMA(CUDA)\x64\Debug\PCMA(CUDA).lib 和对象 E:\C++\PCMA(CUDA)\x64\Debug\PCMA(CUDA).exp
+﻿  Compiling CUDA source file kernel.cu...
+  
+  E:\C++\PCMA(CUDA)\PCMA(CUDA)>"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.0\bin\nvcc.exe" -gencode=arch=compute_52,code=\"sm_52,compute_52\" --use-local-env -ccbin "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.10.25017\bin\HostX86\x64" -x cu   -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.0\include" -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.0\include"  -G   --keep-dir x64\Debug -maxrregcount=0  --machine 64 --compile -cudart static  -g  -use_fast_math -DWIN32 -DWIN64 -D_DEBUG -D_CONSOLE -D_MBCS -Xcompiler "/EHsc /W3 /nologo /Od /Fdx64\Debug\vc141.pdb /FS /Zi /RTC1 /MDd " -o x64\Debug\kernel.cu.obj "E:\C++\PCMA(CUDA)\PCMA(CUDA)\kernel.cu" 
+E:\cv4.1\opencv\build\include\opencv2/stitching/detail/warpers.hpp(213): warning : overloaded virtual function "cv::detail::PlaneWarper::buildMaps" is only partially overridden in class "cv::detail::AffineWarper"
+  
+E:\cv4.1\opencv\build\include\opencv2/stitching/detail/warpers.hpp(213): warning : overloaded virtual function "cv::detail::PlaneWarper::warp" is only partially overridden in class "cv::detail::AffineWarper"
+  
+E:\cv4.1\opencv\build\include\opencv2/stitching/detail/blenders.hpp(100): warning : overloaded virtual function "cv::detail::Blender::prepare" is only partially overridden in class "cv::detail::FeatherBlender"
+  
+E:\cv4.1\opencv\build\include\opencv2/stitching/detail/blenders.hpp(127): warning : overloaded virtual function "cv::detail::Blender::prepare" is only partially overridden in class "cv::detail::MultiBandBlender"
+  
+E:/C++/PCMA(CUDA)/PCMA(CUDA)/kernel.cu(39): warning : variable "startTime" was declared but never referenced
+  
+E:/C++/PCMA(CUDA)/PCMA(CUDA)/kernel.cu(39): warning : variable "endTime" was declared but never referenced
+  
+E:\cv4.1\opencv\build\include\opencv2/stitching/detail/warpers.hpp(213): warning : overloaded virtual function "cv::detail::PlaneWarper::buildMaps" is only partially overridden in class "cv::detail::AffineWarper"
+  
+E:\cv4.1\opencv\build\include\opencv2/stitching/detail/warpers.hpp(213): warning : overloaded virtual function "cv::detail::PlaneWarper::warp" is only partially overridden in class "cv::detail::AffineWarper"
+  
+E:\cv4.1\opencv\build\include\opencv2/stitching/detail/blenders.hpp(100): warning : overloaded virtual function "cv::detail::Blender::prepare" is only partially overridden in class "cv::detail::FeatherBlender"
+  
+E:\cv4.1\opencv\build\include\opencv2/stitching/detail/blenders.hpp(127): warning : overloaded virtual function "cv::detail::Blender::prepare" is only partially overridden in class "cv::detail::MultiBandBlender"
+  
+  kernel.cu
+E:/C++/PCMA(CUDA)/PCMA(CUDA)/kernel.cu(64): warning C4244: “参数”: 从“double”转换到“int”，可能丢失数据
+E:/C++/PCMA(CUDA)/PCMA(CUDA)/kernel.cu(39): warning C4101: “endTime”: 未引用的局部变量
+E:/C++/PCMA(CUDA)/PCMA(CUDA)/kernel.cu(39): warning C4101: “startTime”: 未引用的局部变量
   PCMA(CUDA).vcxproj -> E:\C++\PCMA(CUDA)\x64\Debug\PCMA(CUDA).exe
   PCMA(CUDA).vcxproj -> E:\C++\PCMA(CUDA)\x64\Debug\PCMA(CUDA).pdb (Partial PDB)
