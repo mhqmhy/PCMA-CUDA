@@ -57,10 +57,9 @@ __global__ void computeKernel(float3* &out, float3 **& I0, float3 **& I45, float
 	w45_135 = multiply(I45[r][c], I135[r][c]);
 	w90_135 = multiply(I90[r][c], I135[r][c]);
 	
-	//
-	float3 a = subtract(I45[r][c], I90[r][c]);
-	float3 b = subtract(I0[r][c],multiply(I45[r][c],(float)2.0));
-
+	//-ε45,-ε'45,γ45,-γ45,-γ'45
+	float3 epsilon45_1,epsilon45_2,gamma45_1,gamma45_2,gamma45_3;
+	
 }
 
 
@@ -72,16 +71,18 @@ void PCMA(float3 **& I0, float3 **& I45, float3 **& I90, float3 ** I135, int W, 
 	int bx = (W + blockSize.x - 1) / blockSize.x;
 	int by = (H + blockSize.y - 1) / blockSize.y;
 	dim3 gridSize(bx, by);
-	
 	//申请变量空间
 	float3 **out, *d_out;
 	mallocArray(out, W, H);
 	cudaMalloc(&d_out, W*H * sizeof(float3));
 	tempS = clock();
-	computeKernel << <gridSize, blockSize >> > (d_out, I0, I45, I90, I135, W, H);
+	//执行核函数
+	computeKernel << <gridSize, blockSize >> > (d_out, I0, I45, I90, I135, W, H,test);
 	cudaMemcpy(out, d_out, W*H * sizeof(float3), cudaMemcpyDeviceToHost);
 	tempE = clock();
-	cout << "纯算法(考虑除上传下载外其他开销):" << double(tempE - tempS) / CLOCKS_PER_SEC *1000 << "ms" << endl;
+	cout << "纯算法(不考虑除上传下载外其他开销):" << double(tempE - tempS) / CLOCKS_PER_SEC *1000 << "ms" << endl;
+	
+	//释放空间
 	cudaFree(d_out);
 	freeArray(out, W, H);
 	
