@@ -1,7 +1,5 @@
 
 #include "utils.h"
-
-
 #define TX 32 
 #define TY 32
 using namespace std;
@@ -15,13 +13,13 @@ int main()
 	Mat image0, image45, image90, image135;
 	//读取图片
 	tempS = clock();
-	image0 = imread("4096/right_up.bmp");
+	image0 = imread("1024/right_up.bmp");
 	image0.convertTo(image0, CV_32FC3, 1.0 / 255.0);
-	image45 = imread("4096/left_up.bmp");
+	image45 = imread("1024/left_up.bmp");
 	image45.convertTo(image45, CV_32FC3, 1.0 / 255.0);
-	image90 = imread("4096/left_down.bmp");
+	image90 = imread("1024/left_down.bmp");
 	image90.convertTo(image90, CV_32FC3, 1.0 / 255.0);
-	image135 = imread("4096/right_down.bmp");
+	image135 = imread("1024/right_down.bmp");
 	image135.convertTo(image135, CV_32FC3, 1.0 / 255.0);
 	tempE = clock();
 	cout << "读取图片：" << double(tempE - tempS)/ CLOCKS_PER_SEC << "s" << endl;
@@ -41,7 +39,7 @@ int main()
 
 	tempS = clock();
 	//数据结构转换 Mat to Double3数组
-	float3 **I0,**I45,**I90,**I135;
+	float3 *I0,*I45,*I90,*I135;
 	//申请空间
 	mallocArray(I0, W, H);
 	mallocArray(I45, W, H);
@@ -54,19 +52,21 @@ int main()
 	Mat2Array(I135, image135, W, H);
 
 	tempE = clock();
-	cout << "转换类型：" << double(tempE - tempS) / CLOCKS_PER_SEC << "s" << endl;
+	//cout << "转换类型：" << double(tempE - tempS) / CLOCKS_PER_SEC << "s" << endl;
 	//cout << "裁剪后:" << W << "*" << H << endl;
-
-
-
-	
+	double sum = 0,tempTime;
 	pt_x = 1, pt_y = 1;
 	double wSize_w = 10, wSize_h = 10;
 	//执行去雾算法
-	tempS = clock();
-	PCMA(I0,I45,I90,I135,W,H);
-	tempE = clock();
-	cout << "去雾算法：" << double(tempE - tempS) / CLOCKS_PER_SEC << "s" << endl;
+	for (int i = 0; i < 10; i++) {
+		cout << "**************************" << endl;
+		tempS = clock();
+		PCMA(I0, I45, I90, I135, W, H);
+		tempE = clock();
+		tempTime = double(tempE - tempS) / CLOCKS_PER_SEC;
+		cout <<"第"<<i <<"次去雾算法：" << tempTime << "s" << endl;
+	}
+	
 	//一定要释放空间
 	freeArray(I0, W, H);
 	freeArray(I45, W, H);
